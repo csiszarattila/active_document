@@ -1,0 +1,84 @@
+---
+id: 22
+created_at: 2008-12-18
+author: Csiszár Attila
+title: A Rails session kezelése
+---
+%p 
+  %a{:href => "http://wiki.rubyonrails.com/rails/pages/sessions"} Rails::Wiki::Sessions
+
+%p Mivel a HTTP protokoll állapotátmenet nélküli protokoll, tehát nem tudjuk alapvetően megkülönböztetni az egyes lekérdezésekhez tartozó felhasználókat. Ennek a problémának a megoldására találták ki a session-handling(munkamenet-kezelés)-t.
+
+%p Minden kéréshez csatolunk egy munkamenet azonosítót, amelyhez párhuzamosan kapcsolódik egy adathalmaz is a szerveren. A munkamenet azonosítót minden kéréskor elküldjük a felhasználó felé és biztosítjuk, hogy válaszkor is visszakapjuk azt. A munkamenet azonosító küldése többféleképpen is lehetséges: beleilleszthetjük a lekérés url-jébe, egy form rejtett elemeként is továbbíthatjuk, illetve a böngészők cookie(süti) megoldását is választhatjuk.
+
+%p A Rails munkamenet kezelése a Ruby CGI moduljának Session osztályára épül. A munkamenet azonosítókat sütiken keresztül továbbítja, kódolt formában??? Azonban ha a felhasználó böngészőjében a sütik-kezelése tiltva van ez nem működőképes megoldás - ekkor egy rejtett form elemben küldi vissza azt a szervernek. A CGI modul automatikusan elvégzi ezt a műveletet, ugyanakkor ha url-ben, paraméterként szeretnénk továbbítani a munkamenet-azonosítót, arról magunknak kell gondoskodnunk. 
+
+%p A munkamenet-azonosítóhoz tartozó adatok tárolása többféleképpen is történehet, tárolhatjuk a memóriában, sima szöveges fájlokban, vagy akár adatbázisban - mindez a rendszer-tervezőjére van bízva.
+
+%p Rails munkamenet-kezelésének pontos működésről részletes információkhoz juthatunk, ha végigtanulmányozzuk a CGI modul Session osztályát.
+
+%h2 Beállítások
+%p Rails-es alkalmazásunk munkamenet-kezelési beállításait a config/environment.rb fájlban változtathatjuk meg:
+
+%pre
+  :plain
+    <method>Rails::Initializer.run <keyword>do</keyword> |config|
+      config.action_controller.session = {
+      :session_key => '_mysite_session',
+      :secret      =>     '1f6f1789643aeb0d317ab75cef7672c7c86f93b632dddc580bf44fef22d885e3969da20d7b3ba29716d1a04a417677735770e57573571fa90b44aa8459609e3f'
+    }  
+    <keyword>end</keyword>
+
+%p A beállításaink ezzel az alkalmazás egészére nézve azonosak lesznek, de a Rails lehetőséget ad arra, hogy környezetenként és vezérlőként is más-más beállítást illetve tiltást és engedélyezést állítsunk be.
+%a{ :href => "http://wiki.rubyonrails.org/rails/pages/HowtoChangeSessionOptions"} Bővebben 
+  
+%p Itt adhatjuk meg többek között azt is, hogy milyen módon tároljuk az munkamenet adatokat: a Rails alapértelmezett tárolási formája a PStore, amely file-rendszerű tárolást jelent. 
+
+%p ??? Manual says Sessions are stored by default in a browser cookie that‘s cryptographically signed, but unencrypted. This prevents the user from tampering with the session but also allows him to see its contents.???
+
+%p A többi módot a fentebb már említett Ruby CGI modul session osztálya biztosítja, de a Rails is biztosít egy saját tárolási formát, illetve akár saját megoldást is létrehozhatunk. Nyilvánvalóan mindegyik megoldás rendelkezik előnyökkel és hátrányokkal.
+
+%p Változtassunk most ezen és nézzük meg, hogyan tárolhatjuk egyszerűen adatbázisban a munkamenetekeink adatait:
+%dl
+  %dt Kommenteljük ki a következő sort a config/enviroments.rb file-ban:
+  %dd  config.action_controller.session_store = :active_record_store
+  %dt Futtassuk a rake db:sessions:create
+  %dd Ez utóbbi parancs létrehozza a munkamenetek tárolását megvalósító sémát és migrálja az az adatbázisunkba.Amit azután migrálnunk kell a rake db:migrate paranccsal.
+
+%h3 ActionController::InvalidAuthenticityToken
+%p Az adatbázisos munkamenet tárolásra való átállás után előfodulhat, hogy a fenti kivételbe botlunk. Nos az elsőre frusztrálónak tűnő problémát gyorsan orvosolhatjuk; az app/controllers/application.rb fájlban vegük ki a komment jelet a secret kulcsszó elől <span class="signal">1</span>:
+
+%pre
+  :plain
+    ...
+    # See ActionController::RequestForgeryProtection for details
+    # Uncomment the :secret if you're not using the cookie session store
+
+    protect_from_forgery  <span class="signal">1</span>:secret => 'f62528d702c4231e586e9d688f824a8e'
+    ...
+%p
+%a{:href=>"http://kl93.blogspot.com/2008/04/actioncontrollerinvalidauthenticitytoke.html"} A megoldás forrása
+
+%p A Rails ezzel védekezik a CSRF (Cross-Site Request Forgery) támadások ellen. Bővebb információhoz juthatunk az API ActionController::RequestForgeryProtection::ClassMethods részében a problémáról és magáról a támadás leírásáról.
+
+%h2 Adatok kezelése
+%p A Rails sok más keretrendszerhez hasonlóan egy kozpontosított változót használ adatok elhelyezésére illetve kivételére a munkamenetek között. A session nevű hash tölti be ezt a szerepet - a PHP-ben például hasonló a $_SESSION szuperglobális változó.
+
+%p A session változót a hash-nek megfelelően tudjuk használni, így:
+%pre
+  session[:user_id] = user.id
+%p Kivétel/Adat lekérdezése:
+%pre
+  user_id = session[:user_id]
+%p Törlés:
+%pre
+  session[:user_id] = nil
+
+rake db:session:clear
+
+%h2 Flash - a Rails egy speciális munkamenet eljárása
+Bizonyos esetekben szükségünk van arra, hogy üzeneteket adjunk át átirányított action-ök között, például hogy hibaüzeneteket vagy információkat közöljünk a felhasználóval. Mivel minden átirányítás során a Rails új vezérlő objektumokat hoz létre, így az előzőleg létrehozott példányváltozók elvesznek. Mielőtt még a session hashben helyeznénk el üzeneteinket, jó, ha tudjuk; a Rails rendelkezik ennek megoldására egy speciális munkamenet megoldással, a Flash-sel.
+
+%p A flash a session egy speciális változata, mindösszesen egy lekérdezésig örzi meg tartalmát, utána törlődik.
+
+%p A flash ugyanakkor rendelkezik két segéd metódussal: flash.new[] és flash.keep(). Az előbbi frissíti a flash tartalmát, de nem adja át azt a sessionnek. Míg utóbbi megőrzi a flash tartalmát, hogy az elérhető legyen a következő átirányítás után is.

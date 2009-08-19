@@ -1,0 +1,95 @@
+module ActiveDocument
+  
+  class Base
+  
+    @@base_doc_path = nil
+    @@docs_path = ""
+    @@document_parser = nil
+  
+    def initialize document_data
+      raise ArgumentError unless document_data.kind_of? DocumentData
+    
+      (document_data.meta_data.merge document_data.parser_added_args).each_pair do |meta, value|
+        self.class.send(:attr_accessor, meta)
+        self.send("#{meta}=", value)
+      end
+    
+      @body = document_data.body
+    
+    
+    end
+
+    attr_accessor :body
+    
+    class << self
+    
+      def inherited(child)
+        if not documents_from.nil?
+          child.has_items_in File.join( self.documents_from, child.name.downcase + "s" )
+        end
+        super
+      end
+    
+      def has_documents_in directory
+        @@base_doc_path = File.expand_path(directory)
+      end
+  
+      def documents_from
+        @@base_doc_path
+      end
+
+      def has_items_in directory
+        @@docs_path = File.expand_path(directory)
+      end
+  
+      def items_from
+        @@docs_path
+      end
+  
+      def docs_path
+        @@docs_path
+      end
+    
+      def document_parser parser_const
+        @@document_parser = parser_const
+      end
+    
+
+      # Checks if a document exists at a given path
+      def document_exists? path_to_document
+        File.exists? path_to_document
+      end
+
+      # Try to read document from a given filename,
+      # raise error if document not found
+      # 
+      # Method requires only a file name of document instead of a full file path to document
+      # Because paths for documents is resolved using document's already setted
+      # model's path  - docs_path
+      def read document_file_name
+        path_to_document = File.join(items_from, document_file_name)
+      
+        raise DocumentNotFound unless document_exists? path_to_document
+    
+        ActiveDocument::FileUtils.open path_to_document
+      end
+    
+      # Creates a document data set from an already opened document file
+      def parse io
+        raise ParserNotDefined if @@document_parser.nil?
+      
+        document_data = @@document_parser.parse(io)
+        new document_data
+      end
+
+      def find title
+        self.open @filepath + filename
+      rescue Errno::ENOENT  
+        raise RecordNotFound
+      end
+    
+    end
+    
+  end
+  
+end
