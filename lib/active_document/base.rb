@@ -53,7 +53,10 @@ module ActiveDocument
       def document_parser parser_const
         @@document_parser = parser_const
       end
-    
+      
+      def parser
+        @@document_parser
+      end
 
       # Checks if a document exists at a given path
       def document_exists? path_to_document
@@ -81,11 +84,21 @@ module ActiveDocument
         document_data = @@document_parser.parse(io)
         new document_data
       end
+      
+      def prettify_filename(file_name, prettifier = "-")
+    		/(.+)?\..*/.match(file_name)
+    		file_name_without_extension = $1
+    		file_name_without_extension.gsub(/[_ -]/,prettifier)
+    	end
 
-      def find title
-        self.open @filepath + filename
-      rescue Errno::ENOENT  
-        raise RecordNotFound
+    	def convert_prettified_title_to_filename(title, prettified_with = /-/)
+    		title.gsub(prettified_with, "_") << "." + doc_parser.file_extension_name
+    	end
+
+      def find(name)
+        raise ArgumentError unless name.kind_of?(String)
+        document_filename = parser.add_document_extension_to(name)
+        parse read(document_filename)
       end
     
     end

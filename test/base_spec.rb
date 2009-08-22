@@ -1,13 +1,7 @@
 require File.dirname(__FILE__) + '/helper'
 
 describe ActiveDocument::Base do
-  
-  it "should find a document by title" do
-  end
-  
-  it "should convert a title to filename" do
-  end
-  
+   
   it "should have a document path" do
     class Article < ActiveDocument::Base
       has_items_in FIXTURES_ROOT
@@ -105,4 +99,44 @@ describe ActiveDocument::Base do
     post.title.should match("A Rails session kezelése")
     post.body.should be_a_kind_of(String)
   end
+  
+  it "should find a document by name" do
+    post = Post.find(@sample_post_name_without_extension)
+    post.should be_a_kind_of(Post)
+    
+    lambda{ Post.find(22) }.should raise_error(ArgumentError)
+  end
+  
+  it "should translate a filename to pretty title" do
+    
+    k = Class.new( ActiveDocument::Base )
+    
+    filename = "rails_session_handling.haml"
+    expected_title = "rails-session-handling"
+
+    ActiveDocument::Base.prettify_filename(filename).should match(expected_title)
+
+    ActiveDocument::Base.prettify_filename("file name.rb").should match("file-name")
+    
+    ActiveDocument::Base.prettify_filename("file-name.rb", " ").should match("file name")
+  end
+
+  it "should convert back a pretty title to filename" do
+    k = Class.new( ActiveDocument::Base )
+
+    jaml_parser = mock("jaml_parser")
+    jaml_parser.should_receive(:file_extension_name).any_number_of_times.and_return("haml")
+    k.should_receive(:doc_parser).any_number_of_times.and_return(jaml_parser)
+
+    title = "post-about-rails-session-handling"
+    filename = "post_about_rails_session_handling.rb"
+
+    k.convert_prettified_title_to_filename(title).should_not match(filename)
+    
+    title = "post about rails session handling"
+    expected_filename = "post_about_rails_session_handling.haml"
+
+    k.convert_prettified_title_to_filename(title, / /).should match(expected_filename)
+  end
+  
 end

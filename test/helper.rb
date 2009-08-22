@@ -6,6 +6,7 @@ FIXTURES_ROOT =  TEST_ROOT + '/fixtures'
 Spec::Runner.configure do |config|
   config.before(:all) do
     @sample_post_name = "sample_post.haml"
+    @sample_post_name_without_extension = "sample_post"
     @sample_post = File.join(FIXTURES_ROOT,@sample_post_name)
   end
 end
