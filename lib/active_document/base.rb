@@ -7,7 +7,7 @@ module ActiveDocument
     @@document_parser = nil
   
     def initialize document_data
-      raise ArgumentError unless document_data.kind_of? DocumentData
+      raise ArgumentError,"Expected ActiveDocument::DocumentData" unless document_data.kind_of? DocumentData
     
       (document_data.meta_data.merge document_data.parser_added_args).each_pair do |meta, value|
         self.class.send(:attr_accessor, meta)
@@ -99,6 +99,13 @@ module ActiveDocument
         raise ArgumentError unless name.kind_of?(String)
         document_filename = parser.add_document_extension_to(name)
         parse read(document_filename)
+      end
+      
+      # Collects all document from docs_path
+      def all
+      	FileUtils.collect_files_from(docs_path).collect do |document_filename|
+      	  parse read(document_filename)
+    	  end
       end
     
     end

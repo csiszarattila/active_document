@@ -58,7 +58,7 @@ describe ActiveDocument::Base do
   it "should not create Post if constructor does not get ActiveDocument::DocumentData as argument" do
 
     not_document_data = nil
-    lambda { Post.new not_document_data }.should raise_error(ArgumentError)  
+    lambda { Post.new not_document_data }.should raise_error(ArgumentError, "Expected ActiveDocument::DocumentData")  
     
   end
   
@@ -137,6 +137,18 @@ describe ActiveDocument::Base do
     expected_filename = "post_about_rails_session_handling.haml"
 
     k.convert_prettified_title_to_filename(title, / /).should match(expected_filename)
+  end
+  
+  it "should collect all documents" do
+    
+    ActiveDocument::Base.has_documents_in FIXTURES_ROOT
+    
+    class Collection < ActiveDocument::Base
+    end
+    
+    Collection.all.should be_kind_of(Array)
+    Collection.all.should have(2).items
+    Collection.all.first.should be_kind_of(Collection)
   end
   
 end
