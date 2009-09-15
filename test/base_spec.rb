@@ -25,8 +25,14 @@ describe ActiveDocument::Base do
     class Post < ActiveDocument::Base
     end
 
-    Article.items_from.should match( TEST_ROOT + "/posts")
+    Post.items_from.should match( TEST_ROOT + "/posts" )
     
+    class Card < ActiveDocument::Base
+    end
+    
+    Card.items_from.should match( TEST_ROOT + "/cards" )
+    
+    Post.items_from.should match( TEST_ROOT + "/posts" )
   end
   
   it "should read a document from a file" do

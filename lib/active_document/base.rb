@@ -39,15 +39,15 @@ module ActiveDocument
       end
 
       def has_items_in directory
-        @@docs_path = File.expand_path(directory)
+        @docs_path = File.expand_path(directory)
       end
   
       def items_from
-        @@docs_path
+        @docs_path
       end
   
       def docs_path
-        @@docs_path
+        @docs_path
       end
     
       def document_parser parser_const
