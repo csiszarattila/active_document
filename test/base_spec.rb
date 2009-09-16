@@ -69,21 +69,12 @@ describe ActiveDocument::Base do
   end
   
   it "should create a Post object from ActiveDocument::DocumentData" do 
-  
-    parsed_body = "Some kind of sample post\n body."
-    parsed_meta_data = { 
-      "date" => "2009-08-06", 
-      "author" => "Csiszár Attila",
-      "title" => "Why's Poignant Guide to Ruby"
-    }
-    added_parser_args = { "parsing_date" => Date.today }
-    document_data = ActiveDocument::DocumentData.new parsed_body, parsed_meta_data, added_parser_args
-    
+        
     class Post < ActiveDocument::Base
       document_parser ActiveDocument::Parsers::Jaml
     end
       
-    post = Post.new document_data
+    post = Post.new @document_data_mock
     
     post.author.should match("Csiszár Attila")
     post.title.should match("Why's Poignant Guide to Ruby")
@@ -143,6 +134,17 @@ describe ActiveDocument::Base do
     expected_filename = "post_about_rails_session_handling.haml"
 
     k.convert_prettified_title_to_filename(title, / /).should match(expected_filename)
+  end
+  
+  it "instance should have filename translate to pretty title" do
+    
+    k = Class.new( ActiveDocument::Base )
+    post = k.new @document_data_mock
+    post.should_receive(:filename).and_return("post_about_rails_session_handling.rb")
+    
+    expected_title = "post-about-rails-session-handling"
+    
+    post.prettify_filename.should match(expected_title)
   end
   
   it "should collect all documents" do

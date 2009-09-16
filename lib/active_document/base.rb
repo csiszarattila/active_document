@@ -15,8 +15,10 @@ module ActiveDocument
       end
     
       @body = document_data.body
+    end
     
-    
+    def prettify_filename
+      ActiveDocument::Base.prettify_filename(self.filename)
     end
 
     attr_accessor :body
