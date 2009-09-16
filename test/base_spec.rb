@@ -87,9 +87,8 @@ describe ActiveDocument::Base do
     class Post < ActiveDocument::Base
       document_parser ActiveDocument::Parsers::Jaml
     end
-    
-    readed_post_file = Post.read(@sample_post_name)
-    post = Post.parse readed_post_file
+
+    post = Post.parse @sample_post_name
     
     post.should be_a_kind_of(Post)
     post.author.should match("Csiszár Attila")
@@ -98,10 +97,19 @@ describe ActiveDocument::Base do
   end
   
   it "should find a document by name" do
+    class Post < ActiveDocument::Base
+      has_items_in TEST_ROOT + "/fixtures"
+    end
+
     post = Post.find(@sample_post_name_without_extension)
     post.should be_a_kind_of(Post)
     
     lambda{ Post.find(22) }.should raise_error(ArgumentError)
+  end
+  
+  it "should have filename attribute" do
+    post = Post.find(@sample_post_name_without_extension)
+    post.send(:filename).should match(@sample_post_name)
   end
   
   it "should translate a filename to pretty title" do

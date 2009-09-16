@@ -11,7 +11,7 @@ module ActiveDocument
       @parser_added_args = parser_added_args
     end
   
-    attr_reader :meta_data, :body, :parser_added_args
+    attr_accessor :meta_data, :body, :parser_added_args
   end
   
 end

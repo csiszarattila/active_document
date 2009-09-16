@@ -18,7 +18,7 @@ module ActiveDocument
     		doc_body = io.read
 		
     		io.close
-		
+
     		ActiveDocument::DocumentData.new doc_body, doc_meta_data
     	end
     	
@@ -27,7 +27,7 @@ module ActiveDocument
   	  end
     	
     	def self.add_document_extension_to(str)
-    	  str << "." << file_extension_name
+    	  str + "." + file_extension_name
   	  end
     end
   end

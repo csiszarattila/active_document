@@ -75,15 +75,18 @@ module ActiveDocument
         path_to_document = File.join(items_from, document_file_name)
       
         raise DocumentNotFound unless document_exists? path_to_document
-    
+        
         ActiveDocument::FileUtils.open path_to_document
       end
     
       # Creates a document data set from an already opened document file
-      def parse io
+      def parse document_file_name
         raise ParserNotDefined if @@document_parser.nil?
-      
+
+        io = read(document_file_name)
         document_data = @@document_parser.parse(io)
+        document_data.parser_added_args[:filename] = document_file_name
+        
         new document_data
       end
       
@@ -100,13 +103,13 @@ module ActiveDocument
       def find(name)
         raise ArgumentError unless name.kind_of?(String)
         document_filename = parser.add_document_extension_to(name)
-        parse read(document_filename)
+        parse document_filename
       end
       
       # Collects all document from docs_path
       def all
       	FileUtils.collect_files_from(docs_path).collect do |document_filename|
-      	  parse read(document_filename)
+      	  parse document_filename
     	  end
       end
     
