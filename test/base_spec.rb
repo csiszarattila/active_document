@@ -131,7 +131,7 @@ describe ActiveDocument::Base do
 
     jaml_parser = mock("jaml_parser")
     jaml_parser.should_receive(:file_extension_name).any_number_of_times.and_return("haml")
-    k.should_receive(:doc_parser).any_number_of_times.and_return(jaml_parser)
+    k.should_receive(:parser).any_number_of_times.and_return(jaml_parser)
 
     title = "post-about-rails-session-handling"
     filename = "post_about_rails_session_handling.rb"
@@ -170,7 +170,7 @@ describe ActiveDocument::Base do
   it "should have to find an exact document by prettified title" do
     jaml_parser = mock("jaml_parser")
     jaml_parser.should_receive(:file_extension_name).any_number_of_times.and_return("haml")
-    Collection.should_receive(:doc_parser).any_number_of_times.and_return(jaml_parser)
+    Collection.should_receive(:parser).any_number_of_times.and_return(jaml_parser)
     
     prettified_title = "chunky-bacon"
     c = Collection.find_by_prettified_title(prettified_title)

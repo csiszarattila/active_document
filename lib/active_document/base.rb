@@ -97,7 +97,7 @@ module ActiveDocument
     	end
 
     	def convert_prettified_title_to_filename(title, prettified_with = /-/)
-    		title.gsub(prettified_with, "_") << "." + doc_parser.file_extension_name
+    		title.gsub(prettified_with, "_") << "." + parser.file_extension_name
     	end
 
       def find(name)
