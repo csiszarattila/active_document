@@ -1,7 +1,7 @@
 module ActiveDocument
   
   class Base
-  
+    
     @@base_doc_path = nil
     @@docs_path = ""
     @@document_parser = nil
@@ -112,7 +112,11 @@ module ActiveDocument
       	  parse document_filename
     	  end
       end
-    
+      
+      def find_by_prettified_title(prettified_title)
+        document_filename = convert_prettified_title_to_filename(prettified_title)
+        parse document_filename
+      end
     end
     
   end

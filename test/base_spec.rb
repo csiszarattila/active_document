@@ -154,7 +154,7 @@ describe ActiveDocument::Base do
     
     post.prettify_filename.should match(expected_title)
   end
-  
+    
   it "should collect all documents" do
     
     ActiveDocument::Base.has_documents_in FIXTURES_ROOT
@@ -167,4 +167,15 @@ describe ActiveDocument::Base do
     Collection.all.first.should be_kind_of(Collection)
   end
   
+  it "should have to find an exact document by prettified title" do
+    jaml_parser = mock("jaml_parser")
+    jaml_parser.should_receive(:file_extension_name).any_number_of_times.and_return("haml")
+    Collection.should_receive(:doc_parser).any_number_of_times.and_return(jaml_parser)
+    
+    prettified_title = "chunky-bacon"
+    c = Collection.find_by_prettified_title(prettified_title)
+    
+    c.should be_kind_of(Collection)
+    c.id.should be_equal(24)
+  end
 end
