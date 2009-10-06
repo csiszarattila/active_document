@@ -1,3 +1,6 @@
+require 'rubygems'
+require 'haml'
+
 module ActiveDocument
   module Parsers
     class Jaml
@@ -18,8 +21,13 @@ module ActiveDocument
     		doc_body = io.read
 		
     		io.close
-
-    		ActiveDocument::DocumentData.new doc_body, doc_meta_data
+    		
+    		parser_args = {}
+    		parser_args["haml_body"] = doc_body
+        
+        doc_body = parse_haml(doc_body)
+        
+    		ActiveDocument::DocumentData.new doc_body, doc_meta_data, parser_args
     	end
     	
     	def self.file_extension_name
@@ -29,6 +37,10 @@ module ActiveDocument
     	def self.add_document_extension_to(str)
     	  str + "." + file_extension_name
   	  end
+  	  
+  	  def self.parse_haml(text)
+  	    Haml::Engine.new(text).to_html
+	    end
     end
   end
 end

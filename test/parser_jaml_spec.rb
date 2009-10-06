@@ -25,4 +25,14 @@ describe ActiveDocument::Parsers::Jaml do
     parsed_document_data = ActiveDocument::Parsers::Jaml.parse io
     parsed_document_data.should be_a_kind_of(ActiveDocument::DocumentData)
   end
+  
+  it "should translate Haml body into html" do
+    io = File.open @sample_doc_for_parsing
+    parsed_document_data = ActiveDocument::Parsers::Jaml.parse io
+    parsed_document_data.should be_a_kind_of(ActiveDocument::DocumentData)
+    
+    html_from_haml = "<h1>Sample body for a</h1>\n<p>tiny little sample post.</p>"
+    parsed_document_data.body.should match(html_from_haml)
+    parsed_document_data.parser_added_args["haml_body"].should match("\n%h1 Sample body for a \n%p tiny little sample post.")
+  end
 end
