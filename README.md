@@ -39,7 +39,7 @@ And you want to read it throught objects / models:
     
 
 
-# 
+# Step by step
 
 First, you have to create a delegate class for your models, extending ActiveDocument::Base :
 
@@ -92,13 +92,13 @@ Currently only one parser implemented for ActiveDocuments, the Jaml parser. Jaml
 
 A sample document for that:
 
-  ---
-  title: Yaml is great for meta-data
-  author: Csiszár Attila
-  ---
-  
-  %h1 Coding in Haml
-    %p Is awesome
+    ---
+    title: Yaml is great for meta-data
+    author: Csiszár Attila
+    ---
+ 
+    %h1 Coding in Haml*
+      %p Is awesome
 
 To use different document formats you must have to create an own parser. Creating an own parser is very straightforward if you fullfill the requirements for ActiveDocument's parsers.
 
