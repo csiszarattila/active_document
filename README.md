@@ -97,7 +97,7 @@ A sample document for that:
     author: Csiszár Attila
     ---
  
-    %h1 Coding in Haml*
+    %h1 Coding in Haml
       %p Is awesome
 
 To use different document formats you must have to create an own parser. Creating an own parser is very straightforward if you fullfill the requirements for ActiveDocument's parsers.
