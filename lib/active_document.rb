@@ -16,6 +16,7 @@ module ActiveDocument
   
   module Parsers
     autoload :Jaml, 'active_document/parsers/jaml'
+    autoload :Yamd, 'active_document/parsers/yamd'
   end
   
   class DocumentNotFound < StandardError
