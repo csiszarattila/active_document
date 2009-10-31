@@ -133,7 +133,7 @@ In the built-in Jaml parser all of that looks like this:
       module Parsers
         class Jaml
         
-         def self.parse io
+          def self.parse io
             raise ArgumentError unless io.kind_of? IO
             
             io.readline # step over first line ( '---' )
