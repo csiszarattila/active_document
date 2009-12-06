@@ -178,4 +178,9 @@ describe ActiveDocument::Base do
     c.should be_kind_of(Collection)
     c.id.should be_equal(24)
   end
+
+  it "should have models more than one type of parser" do
+    
+
+  end
 end
