@@ -180,7 +180,10 @@ describe ActiveDocument::Base do
   end
 
   it "should have models more than one type of parser" do
+    class MultiParser < ActiveDocument::Base
+      document_parsers [ActiveDocument::Parsers::Jaml, ActiveDocument::Parsers::Yamd]
+    end
     
-
+    MultiParser.parsers.should have(2).items
   end
 end

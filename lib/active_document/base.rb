@@ -5,6 +5,8 @@ module ActiveDocument
     @@base_doc_path = nil
     @@docs_path = ""
     @@document_parser = nil
+
+    @@document_parsers = nil
   
     def initialize document_data
       raise ArgumentError,"Expected ActiveDocument::DocumentData" unless document_data.kind_of? DocumentData
@@ -50,6 +52,14 @@ module ActiveDocument
   
       def docs_path
         @docs_path
+      end
+      
+      def document_parsers parser_consts
+        @@document_parsers = parser_consts
+      end
+      
+      def parsers
+        @@document_parsers
       end
     
       def document_parser parser_const
