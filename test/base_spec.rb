@@ -181,9 +181,32 @@ describe ActiveDocument::Base do
 
   it "should have models more than one type of parser" do
     class MultiParser < ActiveDocument::Base
-      document_parsers [ActiveDocument::Parsers::Jaml, ActiveDocument::Parsers::Yamd]
+      document_parsers( {".haml" => ActiveDocument::Parsers::Jaml, ".md" => ActiveDocument::Parsers::Yamd})
     end
     
     MultiParser.parsers.should have(2).items
+  end
+  
+  it "should have document and parser type association" do
+    assoc = {
+      ".haml" => ActiveDocument::Parsers::Jaml, 
+      ".md" => ActiveDocument::Parsers::Yamd
+    }
+    
+    #MultiParser.parser_document_assoc.should be_equal(assoc) 
+  end
+  
+  it "should return parser for document type" do
+    MultiParser.parser_for_extension(".md").should equal(ActiveDocument::Parsers::Yamd)
+  end
+  
+  it "should parse documents according to parser-document type association" do
+    MultiParser.has_items_in FIXTURES_ROOT + "/parser"
+    
+    MultiParser.all.should be_kind_of(Array)
+    MultiParser.all.should have(2).items
+    MultiParser.all.first.should be_kind_of(MultiParser)
+    MultiParser.all.first.haml_body
+    MultiParser.all.first.yaml_body
   end
 end

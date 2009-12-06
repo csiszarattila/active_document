@@ -6,7 +6,7 @@ module ActiveDocument
     @@docs_path = ""
     @@document_parser = nil
 
-    @@document_parsers = nil
+    @@document_parsers = []
   
     def initialize document_data
       raise ArgumentError,"Expected ActiveDocument::DocumentData" unless document_data.kind_of? DocumentData
@@ -61,6 +61,10 @@ module ActiveDocument
       def parsers
         @@document_parsers
       end
+      
+      def parser_for_extension ext
+        @@document_parsers[ext]
+      end
     
       def document_parser parser_const
         @@document_parser = parser_const
@@ -92,9 +96,17 @@ module ActiveDocument
       # Creates a document data set from an already opened document file
       def parse document_file_name
         raise ParserNotDefined if @@document_parser.nil?
-
+        
+        ext = ActiveDocument::FileUtils.extension_name(document_file_name)
         io = read(document_file_name)
-        document_data = @@document_parser.parse(io)
+        
+        if not @@document_parsers.empty?
+            document_parser = parser_for_extension(ext)
+            document_data = document_parser.parse(io)
+        else
+          document_data = @@document_parser.parse(io)
+        end
+        
         document_data.parser_added_args[:filename] = document_file_name
         
         new document_data

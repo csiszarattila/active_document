@@ -15,6 +15,10 @@ module ActiveDocument
     def self.select_files_from path_to_files, &select_with_block
       Dir.entries(path_to_files).select &select_with_block
     end
+    
+    def self.extension_name path
+      File.extname path
+    end
   end
   
 end
