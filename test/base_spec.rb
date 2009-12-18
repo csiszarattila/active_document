@@ -136,12 +136,12 @@ describe ActiveDocument::Base do
     title = "post-about-rails-session-handling"
     filename = "post_about_rails_session_handling.rb"
 
-    k.convert_prettified_title_to_filename(title).should_not match(filename)
+    k.convert_prettified_title_to_filename(title, jaml_parser).should_not match(filename)
     
     title = "post about rails session handling"
     expected_filename = "post_about_rails_session_handling.haml"
 
-    k.convert_prettified_title_to_filename(title, / /).should match(expected_filename)
+    k.convert_prettified_title_to_filename(title, jaml_parser, / /).should match(expected_filename)
   end
   
   it "instance should have filename translate to pretty title" do
@@ -178,6 +178,30 @@ describe ActiveDocument::Base do
     c.should be_kind_of(Collection)
     c.id.should be_equal(24)
   end
+  
+  it "should have to find a document by prettified title with multiple file types" do
+    class PrettifiedWithMultiParsers < ActiveDocument::Base
+      has_items_in FIXTURES_ROOT  + "/parser"
+      document_parsers( {".haml" => ActiveDocument::Parsers::Jaml, ".md" => ActiveDocument::Parsers::Yamd})
+    end
+    
+    prettified_title_for_yamd = "sample_for_jaml_parser"
+    expected_title_for_yamd = "sample_for_jaml_parser.haml"
+  
+    document = PrettifiedWithMultiParsers.find_by_prettified_title(prettified_title_for_yamd)
+    document.filename.should match(expected_title_for_yamd)
+
+    prettified_title_for_jaml = "sample_for_yamd_parser"
+    expected_title_for_jaml = "sample_for_yamd_parser.md"
+
+    document = PrettifiedWithMultiParsers.find_by_prettified_title(prettified_title_for_jaml)
+    document.filename.should match(expected_title_for_jaml)
+    
+    not_existed_document = "chunky-bacon"
+
+    lambda{ PrettifiedWithMultiParsers.find_by_prettified_title(not_existed_document) }.should raise_error(ActiveDocument::DocumentNotFound)
+    
+  end
 
   it "should have models more than one type of parser" do
     class MultiParser < ActiveDocument::Base
@@ -207,6 +231,16 @@ describe ActiveDocument::Base do
     MultiParser.all.should have(2).items
     MultiParser.all.first.should be_kind_of(MultiParser)
     MultiParser.all.first.haml_body
-    MultiParser.all.first.yaml_body
+    MultiParser.all[1].yaml_body
   end
+  
+  it "should skip documents with not assigned types" do
+    real_entries = Dir.entries(MultiParser.items_from)
+    fake_entries = ["my_propeller.html", "crying_lightning.txt"]
+    Dir.should_receive(:entries).once.and_return(real_entries + fake_entries)
+    MultiParser.should_receive(:document_exists?).any_number_of_times.and_return(true)
+    
+    MultiParser.all.should have(2).items
+  end
+  
 end

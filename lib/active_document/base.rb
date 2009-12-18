@@ -118,7 +118,7 @@ module ActiveDocument
     		file_name_without_extension.gsub(/[_ -]/,prettifier)
     	end
 
-    	def convert_prettified_title_to_filename(title, prettified_with = /-/)
+    	def convert_prettified_title_to_filename(title, parser, prettified_with = /-/)
     		title.gsub(prettified_with, "_") << "." + parser.file_extension_name
     	end
 
@@ -128,16 +128,44 @@ module ActiveDocument
         parse document_filename
       end
       
-      # Collects all document from docs_path
       def all
-      	FileUtils.collect_files_from(docs_path).collect do |document_filename|
+        document_files.map do |document_filename|
       	  parse document_filename
     	  end
       end
       
+      # Collects all document from docs_path
+      # Filter out unsupported types according to associated parser or parsers
+      def document_files
+        allowed_formats = 
+          if not parsers.empty?
+            parsers.collect do |filetype, parser| 
+              "." + parser.file_extension_name
+            end.join("|")
+          elsif not parser.nil?
+            "." + parser.file_extension_name
+          end
+
+        allowed_formats = Regexp.new(allowed_formats)
+        
+      	FileUtils.collect_files_from(docs_path).select do |document_filename|
+      	  document_filename =~ allowed_formats
+        end
+      end
+      
       def find_by_prettified_title(prettified_title)
-        document_filename = convert_prettified_title_to_filename(prettified_title)
-        parse document_filename
+        if not parsers.empty?
+          parsers.each do |extension, parser|
+            document_file = convert_prettified_title_to_filename(prettified_title, parser)
+            if document_exists? File.join(docs_path, document_file)
+              return parse(document_file)
+            end
+          end
+          raise DocumentNotFound
+        else
+          document_filename = convert_prettified_title_to_filename(prettified_title, self.parser)
+          parse document_filename
+        end
       end
     end
     
